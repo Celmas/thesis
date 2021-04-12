@@ -57,7 +57,7 @@ query = """query {
         contributions(last:50) {
           totalCount
           nodes {
-          	repository {
+            repository {
               description
               name
             }
