@@ -50,4 +50,10 @@ CREATE TABLE IF NOT EXISTS commit_contributions_by_repository (
     FOREIGN KEY (user_id) REFERENCES user (id)
 );
 
-
+CREATE TABLE IF NOT EXISTS user_log (
+	id integer PRIMARY KEY,
+	name text,
+	login text,
+	url text,
+	is_processed boolean
+);

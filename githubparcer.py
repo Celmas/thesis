@@ -142,7 +142,7 @@ query = """query {
 }"""
 
 url = 'https://api.github.com/graphql'
-headers = {'Authorization': 'bearer 9139f78df2e27b699ce5befc2a0dfaeef2eeb358'}
+headers = {'Authorization': 'bearer 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'}
 r = requests.post(url, json={'query': query}, headers=headers)
 print(r.status_code)
 

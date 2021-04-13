@@ -18,3 +18,9 @@
 Лейблы - ключевые слова
 ![alt text](https://github.com/Celmas/thesis/blob/main/misc/RepIssuesPRs.png?raw=true)
  Кол-во issues и pull requests
+
+Поиск ограничен 1000, пришлось найти пользователей с большим кол-вом фолловеров и спарсить их
+https://github.com/JakeWharton
+https://github.com/kenreitz42
+https://github.com/yegor256
+https://github.com/justmarkham
