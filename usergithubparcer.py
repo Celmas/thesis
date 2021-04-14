@@ -27,7 +27,7 @@ for i in range(590):
     formatted_query = query.replace("$after", f'{after}')
 
     url = 'https://api.github.com/graphql'
-    headers = {'Authorization': 'bearer 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'}
+    headers = {'Authorization': 'bearer '}
     r = requests.post(url, json={'query': formatted_query}, headers=headers)
     print('Iteration: ' + str(i))
     print('After = ' + after)
