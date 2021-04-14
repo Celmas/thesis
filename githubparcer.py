@@ -1,6 +1,9 @@
 import requests
 import json
 import sqlite3 as lite
+import threading
+import time
+import schedule
 
 
 def save_user(conn, user_tuple):
@@ -72,10 +75,29 @@ def save_contribution(conn, contribution_tuple):
     return _contr_id
 
 
+def update_processed_flag(conn, user_id, flag=True):
+    cur = conn.cursor()
+    _tuple = (flag, user_id)
+    update_processed_flag_query = """UPDATE user_log SET is_processed = ? WHERE id = ?;"""
+    cur.execute(update_processed_flag_query, _tuple)
+    cur.commit()
+    cur.close()
+
+
+def get_unprocessed_users(conn):
+    cur = conn.cursor()
+    select_unprocessed_users_query = """SELECT * FROM user_log WHERE is_processed = 0 LIMIT 2000"""
+    cur.execute(select_unprocessed_users_query)
+    records = cur.fetchall()
+    print("Fetched " + str(len(records)) + " users")
+    cur.close()
+    return records
+
+
 connection = lite.connect('githubdataset.db')
 
 query = """query { 
-  user(login:"real-or-random") { 
+  user(login:"$login") { 
     name
     followers {
       totalCount
@@ -141,64 +163,87 @@ query = """query {
   }
 }"""
 
-url = 'https://api.github.com/graphql'
-headers = {'Authorization': 'bearer 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'}
-r = requests.post(url, json={'query': query}, headers=headers)
-print(r.status_code)
 
-json_data = json.loads(r.text)
+def job():
+    url = 'https://api.github.com/graphql'
+    headers = {'Authorization': 'bearer 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'}
+    users_to_process = get_unprocessed_users(connection)
+    for user in users_to_process:
+        print("Starting processing user: " + user[2])
+        formatted_query = query.replace("$user", f'{user[2]}')
 
-name = json_data['data']['user']['name']
-bio = json_data['data']['user']['bio']
-followers = json_data['data']['user']['followers']['totalCount']
-totalRepositoryContributions = json_data['data']['user']['contributionsCollection']['totalRepositoryContributions']
-totalCommitContributions = json_data['data']['user']['contributionsCollection']['totalCommitContributions']
-totalIssueContributions = json_data['data']['user']['contributionsCollection']['totalIssueContributions']
-totalPullRequestContributions = json_data['data']['user']['contributionsCollection']['totalPullRequestContributions']
-totalPullRequestReviewContributions = json_data['data']['user']['contributionsCollection'][
-    'totalPullRequestReviewContributions']
-user = (name, bio, followers, totalRepositoryContributions, totalCommitContributions, totalIssueContributions,
-        totalPullRequestContributions, totalPullRequestReviewContributions)
+        r = requests.post(url, json={'query': formatted_query}, headers=headers)
+        print(r.status_code)
 
-user_id = save_user(connection, user)
-repos = json_data['data']['user']['repositories']['nodes']
-for repo in repos:
-    repo_name = repo['name']
-    repo_description = str(repo['description'] or '')
-    repo_watchers = repo['watchers']['totalCount']
-    repo_issues = repo['issues']['totalCount']
-    repo_pull_requests = repo['pullRequests']['totalCount']
-    repo_is_fork = repo['isFork']
-    repo_fork_count = repo['forkCount']
-    repo_url = repo['url']
-    repo_primary_language = ''
-    if repo['primaryLanguage'] is not None:
-        repo_primary_language = repo['primaryLanguage']['name']
-    repo_topics_count = repo['repositoryTopics']['totalCount']
-    repo_readme = ''
-    if repo['object'] is not None:
-        repo_readme = str(repo['object']['text'] or '')
-    repository = (user_id, repo_name, repo_description, repo_watchers, repo_issues, repo_pull_requests, repo_is_fork, repo_fork_count, repo_url, repo_primary_language, repo_topics_count, repo_readme)
-    repo_id = save_repo(connection, repository)
+        json_data = json.loads(r.text)
 
-    if repo_topics_count > 0:
-        repo_topics = repo['repositoryTopics']['nodes']
-        for topic in repo_topics:
-            topic_name = topic['name']
-            _topic = (repo_id, topic_name)
-            save_topic(connection, _topic)
+        name = json_data['data']['user']['name']
+        bio = json_data['data']['user']['bio']
+        followers = json_data['data']['user']['followers']['totalCount']
+        totalRepositoryContributions = json_data['data']['user']['contributionsCollection']['totalRepositoryContributions']
+        totalCommitContributions = json_data['data']['user']['contributionsCollection']['totalCommitContributions']
+        totalIssueContributions = json_data['data']['user']['contributionsCollection']['totalIssueContributions']
+        totalPullRequestContributions = json_data['data']['user']['contributionsCollection']['totalPullRequestContributions']
+        totalPullRequestReviewContributions = json_data['data']['user']['contributionsCollection']['totalPullRequestReviewContributions']
+        user = (name, bio, followers, totalRepositoryContributions, totalCommitContributions, totalIssueContributions,
+                totalPullRequestContributions, totalPullRequestReviewContributions)
 
-    if len(repo['languages']['nodes']) > 0:
-        repo_languages = repo['languages']['nodes']
-        for lang in repo_languages:
-            lang_name = lang['name']
-            language = (repo_id, lang_name)
-            save_language(connection, language)
+        user_id = save_user(connection, user)
+        repos = json_data['data']['user']['repositories']['nodes']
+        for repo in repos:
+            repo_name = repo['name']
+            repo_description = str(repo['description'] or '')
+            repo_watchers = repo['watchers']['totalCount']
+            repo_issues = repo['issues']['totalCount']
+            repo_pull_requests = repo['pullRequests']['totalCount']
+            repo_is_fork = repo['isFork']
+            repo_fork_count = repo['forkCount']
+            repo_url = repo['url']
+            repo_primary_language = ''
+            if repo['primaryLanguage'] is not None:
+                repo_primary_language = repo['primaryLanguage']['name']
+            repo_topics_count = repo['repositoryTopics']['totalCount']
+            repo_readme = ''
+            if repo['object'] is not None:
+                repo_readme = str(repo['object']['text'] or '')
+            repository = (user_id, repo_name, repo_description, repo_watchers, repo_issues, repo_pull_requests, repo_is_fork, repo_fork_count, repo_url, repo_primary_language, repo_topics_count, repo_readme)
+            repo_id = save_repo(connection, repository)
 
-contributions_by_repository = json_data['data']['user']['contributionsCollection']['commitContributionsByRepository']
-for contribution in contributions_by_repository:
-    contr_count = contribution['contributions']['totalCount']
-    contr_repo_name = contribution['contributions']['nodes'][0]['repository']['name']
-    contr_repo_description = str(contribution['contributions']['nodes'][0]['repository']['description'] or '')
-    _contribution = (user_id, contr_count, contr_repo_name, contr_repo_description)
-    save_contribution(connection, _contribution)
+            if repo_topics_count > 0:
+                repo_topics = repo['repositoryTopics']['nodes']
+                for topic in repo_topics:
+                    topic_name = topic['name']
+                    _topic = (repo_id, topic_name)
+                    save_topic(connection, _topic)
+
+            if len(repo['languages']['nodes']) > 0:
+                repo_languages = repo['languages']['nodes']
+                for lang in repo_languages:
+                    lang_name = lang['name']
+                    language = (repo_id, lang_name)
+                    save_language(connection, language)
+
+        contributions_by_repository = json_data['data']['user']['contributionsCollection']['commitContributionsByRepository']
+        for contribution in contributions_by_repository:
+            contr_count = contribution['contributions']['totalCount']
+            contr_repo_name = contribution['contributions']['nodes'][0]['repository']['name']
+            contr_repo_description = str(contribution['contributions']['nodes'][0]['repository']['description'] or '')
+            _contribution = (user_id, contr_count, contr_repo_name, contr_repo_description)
+            save_contribution(connection, _contribution)
+
+        update_processed_flag(connection, user[0])
+        print("User: " + user[2] + "was processed")
+
+
+def run_threaded(job_func):
+    print("Creating tread to process job")
+    job_thread = threading.Thread(target=job_func)
+    job_thread.start()
+
+
+schedule.every(61).minute.do(run_threaded, job)
+
+print("Starting schedule")
+while 1:
+    schedule.run_pending()
+    time.sleep(1)
