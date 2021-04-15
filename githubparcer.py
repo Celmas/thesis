@@ -78,7 +78,7 @@ def update_processed_flag(conn, user_id, flag=True):
 
 def get_unprocessed_users(conn):
     cur = conn.cursor()
-    select_unprocessed_users_query = """SELECT * FROM user_log WHERE is_processed = 0 LIMIT 2000 OFFSET """
+    select_unprocessed_users_query = """SELECT * FROM user_log WHERE is_processed = 0 LIMIT 2000"""
     cur.execute(select_unprocessed_users_query)
     records = cur.fetchall()
     print("Fetched " + str(len(records)) + " users")
@@ -165,11 +165,11 @@ def job():
         print("Start processing user: " + user_row[2])
         formatted_query = query.replace("$login", f'{user_row[2]}')
 
-        connection.execute("BEGIN")
         try:
             r = requests.post(url, json={'query': formatted_query}, headers=headers)
 
             json_data = json.loads(r.text)
+            connection.execute("BEGIN")
 
             name = json_data['data']['user']['name']
             bio = json_data['data']['user']['bio']
@@ -242,5 +242,8 @@ def job():
         connection.execute("COMMIT")
 
         update_processed_flag(connection, user_row[0])
-        print("User: " + str(user_row[2]) + "was processed")
+        print("User: " + str(user_row[2]) + " was processed")
 
+    print("Done")
+
+job()
