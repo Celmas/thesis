@@ -45,7 +45,7 @@ https://github.com/justmarkham
 * primary language - оснвоной ЯП
 * repository topics - ключевые слова
 * languages - ЯП использованные в репозитории
-* readme - файл редми
+* readme - файл README.md
 
 ## COMMIT CONTRIBUTION
 * total_count - кол-во комитов
