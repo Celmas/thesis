@@ -24,3 +24,20 @@ https://github.com/JakeWharton
 https://github.com/kenreitz42
 https://github.com/yegor256
 https://github.com/justmarkham
+
+USER
+*bio - краткая информация о человеке
+*followers - кол-во подписчиков
+*
+
+REPOSIROTY
+*name - название
+*description - описание репозитория
+*wathcers - кол-во следящих за репозиторием
+*issues - кол-во Issues
+*pull requests - кол-во пул рекветов
+*fork count - количество форков
+*url - ссылка на репозиторий
+*primary language - оснвоной ЯП
+*repository topics - ключевые слова
+*readme - файл редми
