@@ -25,19 +25,28 @@ https://github.com/kenreitz42
 https://github.com/yegor256
 https://github.com/justmarkham
 
-USER
-*bio - краткая информация о человеке
-*followers - кол-во подписчиков
-*
+# Features
+## USER
+* bio - краткая информация о человеке
+* followers - кол-во подписчиков
+* total_issues_contribution - кол-во созданных issues пользователем
+* total_pull_request_contribution - кол-во созданных pull request пользователем
+* total_pull_request_review_contribution - кол-во проревьюенных pull request 
 
-REPOSIROTY
-*name - название
-*description - описание репозитория
-*wathcers - кол-во следящих за репозиторием
-*issues - кол-во Issues
-*pull requests - кол-во пул рекветов
-*fork count - количество форков
-*url - ссылка на репозиторий
-*primary language - оснвоной ЯП
-*repository topics - ключевые слова
-*readme - файл редми
+## REPOSIROTY
+* name - название
+* description - описание репозитория
+* wathcers - кол-во следящих за репозиторием
+* issues - кол-во Issues
+* pull requests - кол-во пул рекветов
+* fork count - количество форков
+* url - ссылка на репозиторий
+* primary language - оснвоной ЯП
+* repository topics - ключевые слова
+* languages - ЯП использованные в репозитории
+* readme - файл редми
+
+## COMMIT CONTRIBUTION
+* total_count - кол-во комитов
+* repository_name - название репозитория
+* repository_description - описание репозитория
