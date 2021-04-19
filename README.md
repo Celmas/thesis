@@ -29,6 +29,7 @@ https://github.com/justmarkham
 ## USER
 * bio - краткая информация о человеке
 * followers - кол-во подписчиков
+* total_commit_contribution - кол-во сделанных коммитов
 * total_issues_contribution - кол-во созданных issues пользователем
 * total_pull_request_contribution - кол-во созданных pull request пользователем
 * total_pull_request_review_contribution - кол-во проревьюенных pull request 
